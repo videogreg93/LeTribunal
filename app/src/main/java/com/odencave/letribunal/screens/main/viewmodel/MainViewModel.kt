@@ -20,9 +20,29 @@ class MainViewModel(
     val articleSnippetProvider: ArticleSnippetManager,
 ) : ContainerHost<MainState, MainSideEffect>, ViewModel() {
 
-    override val container = container<MainState, MainSideEffect>(MainState(emptyList())) {
+    val navigationItems = listOf(
+        NavigationItem.Home, NavigationItem.MyRegion, NavigationItem.News
+    )
+
+    override val container = container<MainState, MainSideEffect>(
+        MainState(
+            navigationItems = navigationItems,
+            selectedNavigationItem = navigationItems.first(),
+        )
+    ) {
         fetchRecentArticles()
         fetchPopularArticles()
+    }
+
+    fun onSelectNavigationItem(navigationItem: NavigationItem) = intent {
+        val articles = articleSnippetProvider.fetchSnippetsFromSection("actualites/")
+        reduce {
+            state.copy(selectedNavigationItem = navigationItem, specificSectionArticles = articles)
+        }
+    }
+
+    private fun triggerEffect(effect: MainSideEffect) = intent {
+        postSideEffect(effect)
     }
 
     private fun fetchRecentArticles() = intent {

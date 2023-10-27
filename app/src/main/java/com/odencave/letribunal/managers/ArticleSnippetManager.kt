@@ -29,6 +29,12 @@ class ArticleSnippetManager(
         }
     }
 
+    suspend fun fetchSnippetsFromSection(path: String): List<ArticleSnippet> {
+        return provider.fetchSection().await().contentElements.map {
+            toArticleSnippet(it)
+        }
+    }
+
 
     private fun toArticleSnippet(it: ContentElement): ArticleSnippet {
         val date = ZonedDateTime.parse(it.displayDate)

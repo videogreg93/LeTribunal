@@ -7,8 +7,6 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.odencave.letribunal.managers.ArticleSnippetManager
 import com.odencave.letribunal.managers.RetrofitManager
 import com.odencave.letribunal.models.ArticleSnippet
-import com.odencave.letribunal.providers.ArticleProvider
-import com.odencave.letribunal.providers.JsoupArticleProvider
 import org.orbitmvi.orbit.ContainerHost
 import org.orbitmvi.orbit.syntax.simple.intent
 import org.orbitmvi.orbit.syntax.simple.postSideEffect
@@ -21,7 +19,11 @@ class MainViewModel(
 ) : ContainerHost<MainState, MainSideEffect>, ViewModel() {
 
     val navigationItems = listOf(
-        NavigationItem.Home, NavigationItem.MyRegion, NavigationItem.News
+        NavigationItem.Home,
+        NavigationItem.MyRegion,
+        NavigationItem.News,
+        NavigationItem.Chroniques,
+        NavigationItem.Chroniques.LeGamer
     )
 
     override val container = container<MainState, MainSideEffect>(
@@ -32,12 +34,20 @@ class MainViewModel(
     ) {
         fetchRecentArticles()
         fetchPopularArticles()
+        fetchCategories()
     }
 
     fun onSelectNavigationItem(navigationItem: NavigationItem) = intent {
-        val articles = articleSnippetProvider.fetchSnippetsFromSection("actualites/")
+        val articles = articleSnippetProvider.fetchSnippetsFromSection(navigationItem.path)
         reduce {
             state.copy(selectedNavigationItem = navigationItem, specificSectionArticles = articles)
+        }
+    }
+
+    fun fetchCategories() = intent {
+        val categories = articleSnippetProvider.fetchAllCategories()
+        reduce {
+            state.copy(navigationItems = categories)
         }
     }
 

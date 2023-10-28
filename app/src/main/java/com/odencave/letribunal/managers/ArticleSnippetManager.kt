@@ -5,11 +5,10 @@ import androidx.annotation.RequiresApi
 import com.odencave.letribunal.models.ArticleSnippet
 import com.odencave.letribunal.models.ContentElement
 import com.odencave.letribunal.providers.ArticleSnippetProvider
+import com.odencave.letribunal.screens.main.viewmodel.NavigationItem
 import retrofit2.await
-import java.text.SimpleDateFormat
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
-import java.util.Locale
 
 @RequiresApi(Build.VERSION_CODES.O)
 class ArticleSnippetManager(
@@ -30,9 +29,25 @@ class ArticleSnippetManager(
     }
 
     suspend fun fetchSnippetsFromSection(path: String): List<ArticleSnippet> {
-        return provider.fetchSection().await().contentElements.map {
+        val query =
+            "{\"feature\":\"top-table-list\",\"feedOffset\":0,\"feedSize\":9,\"includeSections\":\"$path\"}"
+
+        return provider.fetchSection(query).await().contentElements.map {
             toArticleSnippet(it)
         }
+    }
+
+    suspend fun fetchAllCategories(): List<NavigationItem> {
+        val test = provider.getAllCategories().await()
+        return test.children.filter { it.nodeType == "section" }
+            .flatMap { innerCategory ->
+                val category = NavigationItem.OutsideCategory(
+                    innerCategory.displayName ?: "ERROR",
+                    innerCategory.id
+                )
+                // todo this only looks one level deep nesting wise
+                listOf(NavigationItem.Home, category)
+            }
     }
 
 

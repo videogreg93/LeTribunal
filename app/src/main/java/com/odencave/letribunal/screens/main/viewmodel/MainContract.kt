@@ -11,11 +11,18 @@ data class MainState(
 )
 
 sealed class NavigationItem(
-    val name: String,
+    open val name: String,
+    open val path: String,
 ) {
-    object Home: NavigationItem("Accueil")
-    object News: NavigationItem("Actualités")
-    object MyRegion: NavigationItem("Ma région")
+    object Home: NavigationItem("Accueil", "")
+    object News: NavigationItem("Actualités", "/actualites")
+    object MyRegion: NavigationItem("Ma région", "/ma-region")
+
+    object Chroniques: NavigationItem("Chroniques", "/chroniques") {
+        object LeGamer: NavigationItem("Le Gamer", "/chroniques/le-gamer")
+    }
+
+    data class OutsideCategory(override val name: String = "", override val path: String = ""): NavigationItem(name, path)
 }
 
 sealed class MainSideEffect {

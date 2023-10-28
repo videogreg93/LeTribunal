@@ -13,14 +13,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.Face
-import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
@@ -30,8 +25,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -92,7 +85,9 @@ class MainActivity : ComponentActivity() {
                 state.navigationItems.forEach { item ->
                     NavigationDrawerItem(
 //                        icon = { Icon(item, contentDescription = null) },
-                        label = { Text(item.name) },
+                        label = {
+                            Text(item.name)
+                        },
                         selected = item == selectedItem,
                         onClick = {
                             scope.launch { drawerState.close() }
@@ -107,8 +102,7 @@ class MainActivity : ComponentActivity() {
         }) {
             when (selectedItem) {
                 NavigationItem.Home -> MainContent(state)
-                NavigationItem.MyRegion -> SpecificSectionContent(state)
-                NavigationItem.News -> SpecificSectionContent(state)
+                else -> SpecificSectionContent(state)
             }
         }
     }

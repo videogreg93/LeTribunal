@@ -19,9 +19,10 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
-import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -29,8 +30,10 @@ import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.NavigationDrawerItemDefaults
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -44,11 +47,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
 import com.odencave.letribunal.common.Title
 import com.odencave.letribunal.models.ArticleSnippet
@@ -73,11 +75,42 @@ class MainActivity : ComponentActivity() {
                 // A surface container using the 'background' color from the theme
                 val state = viewModel.collectAsState().value
                 viewModel.collectSideEffect { handleSideEffect(it) }
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
-                    MainContentWrapper(state)
+                val scope = rememberCoroutineScope()
+                val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+                Scaffold(
+                    topBar = {
+                        TopAppBar(
+                            title = {
+                                    Title(text = "Le Tribunal")
+                            },
+                            navigationIcon = {
+                                Icon(
+                                    Icons.Filled.Menu,
+                                    "content description",
+                                    modifier = Modifier.clickable {
+                                        scope.launch { drawerState.open() }
+                                    }
+                                )
+                            }
+                        )
+                    }
+                ) { padding ->
+                    Surface(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(padding),
+                        color = MaterialTheme.colorScheme.background
+                    ) {
+                        val loadingComplete =
+                            state.mostPopularArticles.isNotEmpty() &&
+                                    state.mostRecentArticles.isNotEmpty() &&
+                                    state.navigationItems.isNotEmpty()
+                        if (loadingComplete) {
+                            MainContentWrapper(state, drawerState)
+                        } else {
+                            Loading()
+                        }
+                    }
                 }
             }
         }
@@ -87,7 +120,6 @@ class MainActivity : ComponentActivity() {
     @Composable
     private fun MainContentWrapper(
         state: MainState,
-        navController: NavHostController = rememberNavController(),
         drawerState: DrawerState = rememberDrawerState(initialValue = DrawerValue.Closed),
     ) {
         val scope = rememberCoroutineScope()
@@ -133,7 +165,7 @@ class MainActivity : ComponentActivity() {
                                 modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
                             )
                             if (expanded) {
-                                item.children.forEach {child ->
+                                item.children.forEach { child ->
                                     NavigationDrawerItem(
                                         label = {
                                             Text(child.name)
@@ -195,6 +227,25 @@ class MainActivity : ComponentActivity() {
                 ArticleSnippet(it)
             }
         }
+    }
+
+    @Composable
+    private fun Loading() {
+        Box(
+            Modifier
+                .fillMaxSize()
+        ) {
+            CircularProgressIndicator(
+                modifier = Modifier
+                    .align(Alignment.Center)
+            )
+        }
+    }
+
+    @Composable
+    @Preview
+    fun Preview() {
+        Loading()
     }
 
     private fun handleSideEffect(effect: MainSideEffect) {

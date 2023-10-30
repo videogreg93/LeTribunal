@@ -14,6 +14,7 @@ data class CategoryLT(
     val children: List<Section>? = emptyList(),
     @SerializedName("display_name")
     val displayName: String? = "",
+    val name: String = "",
     @SerializedName("node_type")
     val nodeType: String = "",
     val url: String? = "",

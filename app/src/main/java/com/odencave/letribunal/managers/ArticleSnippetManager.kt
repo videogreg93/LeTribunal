@@ -39,14 +39,24 @@ class ArticleSnippetManager(
 
     suspend fun fetchAllCategories(): List<NavigationItem> {
         val test = provider.getAllCategories().await()
-        return test.children.filter { it.nodeType == "section" }
+        return listOf(NavigationItem.Home) + test.children.filter { it.nodeType != "link" }
             .flatMap { innerCategory ->
-                val category = NavigationItem.OutsideCategory(
-                    innerCategory.displayName ?: "ERROR",
-                    innerCategory.id
-                )
+                val name = when (innerCategory.nodeType) {
+                    "link" -> innerCategory.displayName
+                    "section" -> innerCategory.name
+                    else -> innerCategory.name
+                }.orEmpty()
+                val link = when (innerCategory.nodeType) {
+                    "link" -> innerCategory.url
+                    "section" -> innerCategory.id
+                    else -> innerCategory.id
+                }.orEmpty()
+                val children = innerCategory.children.orEmpty().map { child ->
+                    NavigationItem.OutsideCategory(child.name, child.url, emptyList())
+                }
+                val category = NavigationItem.OutsideCategory(name, link, children)
                 // todo this only looks one level deep nesting wise
-                listOf(NavigationItem.Home, category)
+                listOf(category)
             }
     }
 
